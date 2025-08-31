@@ -1,7 +1,7 @@
 const balanceEl = document.getElementById("balance");
 const incomeAmountEl = document.getElementById("income-amount");
 const expenseAmountEl = document.getElementById("expense-amount");
-const transactionEl = document.getElementById("transaction-list");
+const transactionListEl = document.getElementById("transaction-list");
 const transactionFormEl = document.getElementById("transaction-form");
 const descriptionEl = document.getElementById("description");
 const amountEl = document.getElementById("amount");
@@ -14,18 +14,47 @@ function addTransaction(e) {
   e.preventDefault();
 
   // get form value
-  const description = descriptionEl.ariaValueMax.trim();
+  const description = descriptionEl.value.trim();
   const amount = parseFloat(amountEl.value);
 
   transactions.push({
-    id: Date.now(),
-    description,
+    id:Date.now(),
+    description:description,
     amount,
   });
 
-//   save data to local storage
-localStorage.setItem("transactions", JSON.stringify(transactions))
+  //   save data to local storage
+  localStorage.setItem("transactions",JSON.stringify(transactions));
 
-updateTransactionList()
+  updateTransactionList();
+//   updateSummary();
 
+  transactionFormEl.reset();
+}
+
+function updateTransactionList() {
+  transactionListEl.innerHTML = "";
+
+  const sortedTransactions = [...transactions].reverse();
+
+  sortedTransactions.forEach((transaction) => {
+    const transactionEl = createTransactionElement(transaction);
+    transactionListEl.appendChild(transactionEl);
+  });
+}
+
+function createTransactionElement(transaction) {
+  const li = document.createElement("li");
+  li.classList.add("transaction");
+  li.classList.add(transaction.amount > 0 ? "income" : "expense");
+
+//   // todo: update the amount formating
+  li.innerHTML = `
+    <span>${transaction.description}</span>
+    <span>${transaction.amount}
+    <button class="delete-btn" onclick="removeTransaction(${transaction.id})">x</button>
+    </span>
+    `;
+
+  return li;
 }
