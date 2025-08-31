@@ -18,16 +18,16 @@ function addTransaction(e) {
   const amount = parseFloat(amountEl.value);
 
   transactions.push({
-    id:Date.now(),
-    description:description,
+    id: Date.now(),
+    description: description,
     amount,
   });
 
   //   save data to local storage
-  localStorage.setItem("transactions",JSON.stringify(transactions));
+  localStorage.setItem("transactions", JSON.stringify(transactions));
 
   updateTransactionList();
-//   updateSummary();
+  updateSummary();
 
   transactionFormEl.reset();
 }
@@ -48,13 +48,57 @@ function createTransactionElement(transaction) {
   li.classList.add("transaction");
   li.classList.add(transaction.amount > 0 ? "income" : "expense");
 
-//   // todo: update the amount formating
+  //   // todo: update the amount formating
   li.innerHTML = `
     <span>${transaction.description}</span>
-    <span>${transaction.amount}
-    <button class="delete-btn" onclick="removeTransaction(${transaction.id})">x</button>
+
+    <span>${formatCurrency(transaction.amount)}
+    <button class="delete-btn" onclick="removeTransaction(${
+      transaction.id
+    })">x</button>
     </span>
     `;
 
   return li;
 }
+
+function updateSummary() {
+  const balance = transactions.reduce(
+    (acc, transaction) => acc + transaction.amount,
+    0
+  );
+
+  const income = transactions
+    .filter((transaction) => transaction.amount > 0)
+    .reduce((acc, transaction) => acc + transaction.amount, 0);
+
+  const expenses = transactions
+    .filter((transaction) => transaction.amount < 0)
+    .reduce((acc, transaction) => acc + transaction.amount, 0);
+
+  // update ui => todo: fix the formating
+  balanceEl.textContent = formatCurrency(balance);
+  incomeAmountEl.textContent = formatCurrency(income);
+  expenseAmountEl.textContent = formatCurrency(expenses);
+}
+
+function formatCurrency(number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(number);
+}
+
+function removeTransaction(id) {
+  // filter out the one we want to delete
+  transactions = transactions.filter((transaction) => transaction.id !== id);
+
+  localStorage.setItem("transactions", JSON.stringify(transactions));
+
+  updateTransactionList();
+  updateSummary();
+}
+
+// initial render
+updateTransactionList();
+updateSummary();
